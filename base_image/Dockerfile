@@ -3,21 +3,20 @@ FROM python:3.9-slim
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     wget \
-    gnupg \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Chrome
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
-    && apt-get update && apt-get install -y google-chrome-stable \
-    && rm -rf /var/lib/apt/lists/*
+# Install Chrome for Testing (Stable version 136.0.7103.92)
+RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/136.0.7103.92/linux64/chrome-linux64.zip \
+    && unzip chrome-linux64.zip -d /usr/local/ \
+    && ln -s /usr/local/chrome-linux64/chrome /usr/local/bin/google-chrome \
+    && rm chrome-linux64.zip
 
-# Install ChromeDriver with a specific version
-RUN CHROMEDRIVER_VERSION=114.0.5735.90 \
-    && wget -q https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip \
-    && unzip chromedriver_linux64.zip -d /usr/local/bin/ \
-    && rm chromedriver_linux64.zip
+# Install matching ChromeDriver (version 136.0.7103.92)
+RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/136.0.7103.92/linux64/chromedriver-linux64.zip \
+    && unzip chromedriver-linux64.zip -d /usr/local/bin/ \
+    && mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
+    && rm -rf chromedriver-linux64.zip /usr/local/bin/chromedriver-linux64
 
 # Install Python dependencies
 COPY requirements.txt /app/requirements.txt
